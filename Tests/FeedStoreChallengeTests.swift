@@ -5,7 +5,7 @@
 import XCTest
 import FeedStoreChallenge
 
-class ArchivedFeedImage: Encodable, Decodable {
+class ArchivedFeedImage: Codable {
 
     public var id: UUID
     public var imageDescription: String?
@@ -20,17 +20,26 @@ class ArchivedFeedImage: Encodable, Decodable {
     }
 }
 
-class ArchivedFeed: Encodable, Decodable {
-    public var timestamp: Double
-    public var feed: [ArchivedFeedImage]
+class ArchivedFeed: Codable {
 
-    public init(timestamp: Double, feed: [ArchivedFeedImage]) {
+    public var timestamp: Date
+    public var feed: [ArchivedFeedImage]
+    public var id: String
+
+    public init(timestamp: Date, feed: [ArchivedFeedImage]) {
         self.timestamp = timestamp
         self.feed = feed
+        self.id = UUID().uuidString
     }
 }
 
 class UserDefaultsFeedStore: FeedStore {
+
+    private func userDefaults() -> UserDefaults {
+        return UserDefaults.standard
+    }
+
+    private let queue = DispatchQueue(label: "\(UserDefaultsFeedStore.self)Queue", qos: .userInitiated, attributes: .concurrent)
 
     func deleteCachedFeed(completion: @escaping UserDefaultsFeedStore.DeletionCompletion) {
 
@@ -38,29 +47,27 @@ class UserDefaultsFeedStore: FeedStore {
 
     func insert(_ feed: [LocalFeedImage], timestamp: Date, completion: @escaping UserDefaultsFeedStore.InsertionCompletion) {
 
-        let defaults = UserDefaults.standard
+        let jsonFeed = self.localFeedToJson(images: feed, timestamp: timestamp)
 
-        let jsonFeed = localFeedToJson(images: feed, timestamp: timestamp)
-
-        defaults.set(jsonFeed, forKey: "feed")
+        self.userDefaults().set(jsonFeed, forKey: "feed")
 
         completion(nil)
+
     }
 
     func retrieve(completion: @escaping UserDefaultsFeedStore.RetrievalCompletion) {
 
-        let defaults = UserDefaults.standard
+        if let jsonData = self.userDefaults().data(forKey: "feed") {
 
-        if let jsonData = defaults.data(forKey: "feed") {
-
-            let localFeed = jsonToLocalFeed(jsonFeed: jsonData)
+            let localFeed = self.jsonToLocalFeed(jsonFeed: jsonData)
             completion(.found(feed: localFeed.images, timestamp: localFeed.timestamp))
 
         } else {
 
             completion(.empty)
-            
+
         }
+
     }
 
     private func localFeedToJson(images: [LocalFeedImage], timestamp: Date) -> Data {
@@ -69,13 +76,9 @@ class UserDefaultsFeedStore: FeedStore {
 
         let archivedImages = images.map { ArchivedFeedImage(id: $0.id, imageDescription: $0.description, location: $0.location, url: $0.url) }
 
-        let timeDouble = timestamp.timeIntervalSince1970
-
-        let archivableFeed = ArchivedFeed(timestamp: timeDouble, feed: archivedImages)
+        let archivableFeed = ArchivedFeed(timestamp: timestamp, feed: archivedImages)
 
         let jsonFeed = try! encoder.encode(archivableFeed)
-
-        print(String(data: jsonFeed, encoding: .utf8)!)
 
         return jsonFeed
     }
@@ -87,9 +90,8 @@ class UserDefaultsFeedStore: FeedStore {
         let archivedFeed = try! decoder.decode(ArchivedFeed.self, from: jsonFeed)
 
         let localFeedImages = archivedFeed.feed.map { LocalFeedImage(id: $0.id, description: $0.imageDescription, location: $0.location, url: $0.url) }
-        let timestamp = Date(timeIntervalSince1970: archivedFeed.timestamp)
 
-        return (timestamp, localFeedImages)
+        return (archivedFeed.timestamp, localFeedImages)
     }
 }
 
@@ -132,15 +134,15 @@ class FeedStoreChallengeTests: XCTestCase, FeedStoreSpecs {
     }
 
     func test_insert_deliversNoErrorOnNonEmptyCache() {
-        //		let sut = makeSUT()
-        //
-        //		assertThatInsertDeliversNoErrorOnNonEmptyCache(on: sut)
+        let sut = makeSUT()
+
+        assertThatInsertDeliversNoErrorOnNonEmptyCache(on: sut)
     }
 
     func test_insert_overridesPreviouslyInsertedCacheValues() {
-        //		let sut = makeSUT()
+        //      let sut = makeSUT()
         //
-        //		assertThatInsertOverridesPreviouslyInsertedCacheValues(on: sut)
+        //      assertThatInsertOverridesPreviouslyInsertedCacheValues(on: sut)
     }
 
     func test_delete_deliversNoErrorOnEmptyCache() {
@@ -176,9 +178,21 @@ class FeedStoreChallengeTests: XCTestCase, FeedStoreSpecs {
     // - MARK: Helpers
 
     private func makeSUT() -> FeedStore {
+        let sut = UserDefaultsFeedStore()
+        return sut
+    }
+
+    private func cleanDefaults() {
         let defaults = UserDefaults.standard
         defaults.removeObject(forKey: "feed")
-        return UserDefaultsFeedStore()
+    }
+
+    override func tearDown() {
+        cleanDefaults()
+    }
+
+    override func setUp() {
+        cleanDefaults()
     }
 
 }
