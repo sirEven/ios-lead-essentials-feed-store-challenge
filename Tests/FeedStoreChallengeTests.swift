@@ -35,29 +35,35 @@ class ArchivedFeed: Codable {
 
 class UserDefaultsFeedStore: FeedStore {
 
-    private func userDefaults() -> UserDefaults {
-        return UserDefaults.standard
-    }
+    private var userDefaults: UserDefaults
 
-    private let queue = DispatchQueue(label: "\(UserDefaultsFeedStore.self)Queue", qos: .userInitiated, attributes: .concurrent)
+    public init(userDefaults: UserDefaults) {
+        self.userDefaults = userDefaults
+    }
 
     func deleteCachedFeed(completion: @escaping UserDefaultsFeedStore.DeletionCompletion) {
 
+        let userDefaults = self.userDefaults
+
+        userDefaults.removeObject(forKey: "feed")
+
+        completion(nil)
     }
 
     func insert(_ feed: [LocalFeedImage], timestamp: Date, completion: @escaping UserDefaultsFeedStore.InsertionCompletion) {
 
         let jsonFeed = self.localFeedToJson(images: feed, timestamp: timestamp)
+        let userDefaults = self.userDefaults
 
-        self.userDefaults().set(jsonFeed, forKey: "feed")
+        userDefaults.set(jsonFeed, forKey: "feed")
 
         completion(nil)
-
     }
 
     func retrieve(completion: @escaping UserDefaultsFeedStore.RetrievalCompletion) {
 
-        if let jsonData = self.userDefaults().data(forKey: "feed") {
+        let userDefaults = self.userDefaults
+        if let jsonData = userDefaults.data(forKey: "feed") {
 
             let localFeed = self.jsonToLocalFeed(jsonFeed: jsonData)
             completion(.found(feed: localFeed.images, timestamp: localFeed.timestamp))
@@ -67,7 +73,6 @@ class UserDefaultsFeedStore: FeedStore {
             completion(.empty)
 
         }
-
     }
 
     private func localFeedToJson(images: [LocalFeedImage], timestamp: Date) -> Data {
@@ -140,45 +145,45 @@ class FeedStoreChallengeTests: XCTestCase, FeedStoreSpecs {
     }
 
     func test_insert_overridesPreviouslyInsertedCacheValues() {
-        //      let sut = makeSUT()
-        //
-        //      assertThatInsertOverridesPreviouslyInsertedCacheValues(on: sut)
+        let sut = makeSUT()
+
+        assertThatInsertOverridesPreviouslyInsertedCacheValues(on: sut)
     }
 
     func test_delete_deliversNoErrorOnEmptyCache() {
-        //		let sut = makeSUT()
-        //
-        //		assertThatDeleteDeliversNoErrorOnEmptyCache(on: sut)
+        let sut = makeSUT()
+
+        assertThatDeleteDeliversNoErrorOnEmptyCache(on: sut)
     }
 
     func test_delete_hasNoSideEffectsOnEmptyCache() {
-        //		let sut = makeSUT()
-        //
-        //		assertThatDeleteHasNoSideEffectsOnEmptyCache(on: sut)
+        let sut = makeSUT()
+
+        assertThatDeleteHasNoSideEffectsOnEmptyCache(on: sut)
     }
 
     func test_delete_deliversNoErrorOnNonEmptyCache() {
-        //		let sut = makeSUT()
-        //
-        //		assertThatDeleteDeliversNoErrorOnNonEmptyCache(on: sut)
+        let sut = makeSUT()
+
+        assertThatDeleteDeliversNoErrorOnNonEmptyCache(on: sut)
     }
 
     func test_delete_emptiesPreviouslyInsertedCache() {
-        //		let sut = makeSUT()
-        //
-        //		assertThatDeleteEmptiesPreviouslyInsertedCache(on: sut)
+        let sut = makeSUT()
+
+        assertThatDeleteEmptiesPreviouslyInsertedCache(on: sut)
     }
 
     func test_storeSideEffects_runSerially() {
-        //		let sut = makeSUT()
-        //
-        //		assertThatSideEffectsRunSerially(on: sut)
+        let sut = makeSUT()
+
+        assertThatSideEffectsRunSerially(on: sut)
     }
 
     // - MARK: Helpers
 
     private func makeSUT() -> FeedStore {
-        let sut = UserDefaultsFeedStore()
+        let sut = UserDefaultsFeedStore(userDefaults: .standard)
         return sut
     }
 
