@@ -5,7 +5,7 @@
 import XCTest
 import FeedStoreChallenge
 
-class ArchivedFeedImage: Codable {
+class CodableFeedImage: Codable {
 
     public var id: UUID
     public var imageDescription: String?
@@ -20,13 +20,13 @@ class ArchivedFeedImage: Codable {
     }
 }
 
-class ArchivedFeed: Codable {
+class CodableFeed: Codable {
 
     public var timestamp: Date
-    public var feed: [ArchivedFeedImage]
+    public var feed: [CodableFeedImage]
     public var id: String
 
-    public init(timestamp: Date, feed: [ArchivedFeedImage]) {
+    public init(timestamp: Date, feed: [CodableFeedImage]) {
         self.timestamp = timestamp
         self.feed = feed
         self.id = UUID().uuidString
@@ -79,9 +79,9 @@ class UserDefaultsFeedStore: FeedStore {
 
         let encoder = JSONEncoder()
 
-        let archivedImages = images.map { ArchivedFeedImage(id: $0.id, imageDescription: $0.description, location: $0.location, url: $0.url) }
+        let archivedImages = images.map { CodableFeedImage(id: $0.id, imageDescription: $0.description, location: $0.location, url: $0.url) }
 
-        let archivableFeed = ArchivedFeed(timestamp: timestamp, feed: archivedImages)
+        let archivableFeed = CodableFeed(timestamp: timestamp, feed: archivedImages)
 
         let jsonFeed = try! encoder.encode(archivableFeed)
 
@@ -92,7 +92,7 @@ class UserDefaultsFeedStore: FeedStore {
 
         let decoder = JSONDecoder()
 
-        let archivedFeed = try! decoder.decode(ArchivedFeed.self, from: jsonFeed)
+        let archivedFeed = try! decoder.decode(CodableFeed.self, from: jsonFeed)
 
         let localFeedImages = archivedFeed.feed.map { LocalFeedImage(id: $0.id, description: $0.imageDescription, location: $0.location, url: $0.url) }
 
