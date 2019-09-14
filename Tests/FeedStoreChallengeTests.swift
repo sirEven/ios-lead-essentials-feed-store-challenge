@@ -36,16 +36,18 @@ class CodableFeed: Codable {
 class UserDefaultsFeedStore: FeedStore {
 
     private var userDefaults: UserDefaults
+    private var key: String
 
-    public init(userDefaults: UserDefaults) {
+    public init(key: String, userDefaults: UserDefaults) {
         self.userDefaults = userDefaults
+        self.key = key
     }
 
     func deleteCachedFeed(completion: @escaping UserDefaultsFeedStore.DeletionCompletion) {
 
         let userDefaults = self.userDefaults
 
-        userDefaults.removeObject(forKey: "feed")
+        userDefaults.removeObject(forKey: key)
 
         completion(nil)
     }
@@ -55,7 +57,7 @@ class UserDefaultsFeedStore: FeedStore {
         let jsonFeed = self.localFeedToJson(images: feed, timestamp: timestamp)
         let userDefaults = self.userDefaults
 
-        userDefaults.set(jsonFeed, forKey: "feed")
+        userDefaults.set(jsonFeed, forKey: key)
 
         completion(nil)
     }
@@ -63,7 +65,7 @@ class UserDefaultsFeedStore: FeedStore {
     func retrieve(completion: @escaping UserDefaultsFeedStore.RetrievalCompletion) {
 
         let userDefaults = self.userDefaults
-        if let jsonData = userDefaults.data(forKey: "feed") {
+        if let jsonData = userDefaults.data(forKey: key) {
 
             let localFeed = self.jsonToLocalFeed(jsonFeed: jsonData)
             completion(.found(feed: localFeed.images, timestamp: localFeed.timestamp))
@@ -109,87 +111,91 @@ class FeedStoreChallengeTests: XCTestCase, FeedStoreSpecs {
     //
 
     func test_retrieve_deliversEmptyOnEmptyCache() {
-        let sut = makeSUT()
+        let sut = makeSUT(with: testSpecificUserDefaultsKey())
 
         assertThatRetrieveDeliversEmptyOnEmptyCache(on: sut)
     }
 
     func test_retrieve_hasNoSideEffectsOnEmptyCache() {
-        let sut = makeSUT()
+        let sut = makeSUT(with: testSpecificUserDefaultsKey())
 
         assertThatRetrieveHasNoSideEffectsOnEmptyCache(on: sut)
     }
 
     func test_retrieve_deliversFoundValuesOnNonEmptyCache() {
-        let sut = makeSUT()
+        let sut = makeSUT(with: testSpecificUserDefaultsKey())
 
         assertThatRetrieveDeliversFoundValuesOnNonEmptyCache(on: sut)
     }
 
     func test_retrieve_hasNoSideEffectsOnNonEmptyCache() {
-        let sut = makeSUT()
+        let sut = makeSUT(with: testSpecificUserDefaultsKey())
 
         assertThatRetrieveHasNoSideEffectsOnNonEmptyCache(on: sut)
     }
 
     func test_insert_deliversNoErrorOnEmptyCache() {
-        let sut = makeSUT()
+        let sut = makeSUT(with: testSpecificUserDefaultsKey())
 
         assertThatInsertDeliversNoErrorOnEmptyCache(on: sut)
     }
 
     func test_insert_deliversNoErrorOnNonEmptyCache() {
-        let sut = makeSUT()
+        let sut = makeSUT(with: testSpecificUserDefaultsKey())
 
         assertThatInsertDeliversNoErrorOnNonEmptyCache(on: sut)
     }
 
     func test_insert_overridesPreviouslyInsertedCacheValues() {
-        let sut = makeSUT()
+        let sut = makeSUT(with: testSpecificUserDefaultsKey())
 
         assertThatInsertOverridesPreviouslyInsertedCacheValues(on: sut)
     }
 
     func test_delete_deliversNoErrorOnEmptyCache() {
-        let sut = makeSUT()
+        let sut = makeSUT(with: testSpecificUserDefaultsKey())
 
         assertThatDeleteDeliversNoErrorOnEmptyCache(on: sut)
     }
 
     func test_delete_hasNoSideEffectsOnEmptyCache() {
-        let sut = makeSUT()
+        let sut = makeSUT(with: testSpecificUserDefaultsKey())
 
         assertThatDeleteHasNoSideEffectsOnEmptyCache(on: sut)
     }
 
     func test_delete_deliversNoErrorOnNonEmptyCache() {
-        let sut = makeSUT()
+        let sut = makeSUT(with: testSpecificUserDefaultsKey())
 
         assertThatDeleteDeliversNoErrorOnNonEmptyCache(on: sut)
     }
 
     func test_delete_emptiesPreviouslyInsertedCache() {
-        let sut = makeSUT()
+        let sut = makeSUT(with: testSpecificUserDefaultsKey())
 
         assertThatDeleteEmptiesPreviouslyInsertedCache(on: sut)
     }
 
     func test_storeSideEffects_runSerially() {
-        let sut = makeSUT()
+        let sut = makeSUT(with: testSpecificUserDefaultsKey())
 
         assertThatSideEffectsRunSerially(on: sut)
     }
 
     // - MARK: Helpers
 
-    private func makeSUT() -> FeedStore {
-        let sut = UserDefaultsFeedStore(userDefaults: .standard)
+    private func makeSUT(with key: String) -> FeedStore {
+        let sut = UserDefaultsFeedStore(key: testSpecificUserDefaultsKey(), userDefaults: .standard)
         return sut
+    }
+
+    private func testSpecificUserDefaultsKey() -> String {
+        return "feed"
     }
 
     private func cleanDefaults() {
         let defaults = UserDefaults.standard
-        defaults.removeObject(forKey: "feed")
+        defaults.removeObject(forKey: testSpecificUserDefaultsKey())
     }
 
     override func tearDown() {
@@ -199,7 +205,6 @@ class FeedStoreChallengeTests: XCTestCase, FeedStoreSpecs {
     override func setUp() {
         cleanDefaults()
     }
-
 }
 
 //
