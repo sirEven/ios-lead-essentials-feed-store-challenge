@@ -35,6 +35,7 @@ class CodableFeed: Codable {
 
 class UserDefaultsFeedStore: FeedStore {
 
+    private let queue = DispatchQueue(label: "\(UserDefaultsFeedStore.self)Queue", qos: .userInitiated, attributes: .concurrent)
     private var userDefaults: UserDefaults
     private var key: String
 
@@ -45,35 +46,41 @@ class UserDefaultsFeedStore: FeedStore {
 
     func deleteCachedFeed(completion: @escaping UserDefaultsFeedStore.DeletionCompletion) {
 
-        let userDefaults = self.userDefaults
+        queue.async(flags: .barrier) {
+            let userDefaults = self.userDefaults
 
-        userDefaults.removeObject(forKey: key)
+            userDefaults.removeObject(forKey: self.key)
 
-        completion(nil)
+            completion(nil)
+        }
     }
 
     func insert(_ feed: [LocalFeedImage], timestamp: Date, completion: @escaping UserDefaultsFeedStore.InsertionCompletion) {
-
-        let jsonFeed = self.localFeedToJson(images: feed, timestamp: timestamp)
-        let userDefaults = self.userDefaults
-
-        userDefaults.set(jsonFeed, forKey: key)
-
-        completion(nil)
+        
+        queue.async(flags: .barrier) {
+            let jsonFeed = self.localFeedToJson(images: feed, timestamp: timestamp)
+            let userDefaults = self.userDefaults
+            
+            userDefaults.set(jsonFeed, forKey: self.key)
+            
+            completion(nil)
+        }
     }
 
     func retrieve(completion: @escaping UserDefaultsFeedStore.RetrievalCompletion) {
 
-        let userDefaults = self.userDefaults
-        if let jsonData = userDefaults.data(forKey: key) {
+        queue.async {
+            let userDefaults = self.userDefaults
+            if let jsonData = userDefaults.data(forKey: self.key) {
 
-            let localFeed = self.jsonToLocalFeed(jsonFeed: jsonData)
-            completion(.found(feed: localFeed.images, timestamp: localFeed.timestamp))
+                let localFeed = self.jsonToLocalFeed(jsonFeed: jsonData)
+                completion(.found(feed: localFeed.images, timestamp: localFeed.timestamp))
 
-        } else {
+            } else {
 
-            completion(.empty)
+                completion(.empty)
 
+            }
         }
     }
 
