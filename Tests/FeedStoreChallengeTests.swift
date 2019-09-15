@@ -5,35 +5,35 @@
 import XCTest
 import FeedStoreChallenge
 
-class CodableFeedImage: Codable {
-
-    public var id: UUID
-    public var imageDescription: String?
-    public var location: String?
-    public var url: URL
-
-    public init(id: UUID, imageDescription: String?, location: String?, url: URL) {
-        self.id = id
-        self.imageDescription = imageDescription
-        self.location = location
-        self.url = url
-    }
-}
-
-class CodableFeed: Codable {
-
-    public var timestamp: Date
-    public var feed: [CodableFeedImage]
-    public var id: String
-
-    public init(timestamp: Date, feed: [CodableFeedImage]) {
-        self.timestamp = timestamp
-        self.feed = feed
-        self.id = UUID().uuidString
-    }
-}
-
 class UserDefaultsFeedStore: FeedStore {
+
+    private struct CodableFeedImage: Codable {
+
+        public var id: UUID
+        public var imageDescription: String?
+        public var location: String?
+        public var url: URL
+
+        public init(id: UUID, imageDescription: String?, location: String?, url: URL) {
+            self.id = id
+            self.imageDescription = imageDescription
+            self.location = location
+            self.url = url
+        }
+    }
+
+    private struct CodableFeed: Codable {
+
+        public var timestamp: Date
+        public var feed: [CodableFeedImage]
+        public var id: String
+
+        public init(timestamp: Date, feed: [CodableFeedImage]) {
+            self.timestamp = timestamp
+            self.feed = feed
+            self.id = UUID().uuidString
+        }
+    }
 
     private let queue = DispatchQueue(label: "\(UserDefaultsFeedStore.self)Queue", qos: .userInitiated, attributes: .concurrent)
     private var userDefaults: UserDefaults
@@ -56,13 +56,13 @@ class UserDefaultsFeedStore: FeedStore {
     }
 
     func insert(_ feed: [LocalFeedImage], timestamp: Date, completion: @escaping UserDefaultsFeedStore.InsertionCompletion) {
-        
+
         queue.async(flags: .barrier) {
             let jsonFeed = self.localFeedToJson(images: feed, timestamp: timestamp)
             let userDefaults = self.userDefaults
-            
+
             userDefaults.set(jsonFeed, forKey: self.key)
-            
+
             completion(nil)
         }
     }
