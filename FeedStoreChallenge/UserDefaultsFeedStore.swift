@@ -63,7 +63,7 @@ public final class UserDefaultsFeedStore: FeedStore {
 
             if let jsonData = self.userDefaults.data(forKey: self.key) {
 
-                let localFeed = self.jsonToLocalFeed(jsonFeed: jsonData)
+                let localFeed = self.feed(from: jsonData)
                 completion(.found(feed: localFeed.images, timestamp: localFeed.timestamp))
 
             } else {
@@ -85,12 +85,12 @@ public final class UserDefaultsFeedStore: FeedStore {
         return jsonFeed
     }
 
-    private func jsonToLocalFeed(jsonFeed: Data) -> (timestamp: Date, images: [LocalFeedImage]) {
+    private func feed(from data: Data) -> LocalFeed {
 
-        let archivedFeed = try! JSONDecoder().decode(Feed.self, from: jsonFeed)
+        let archivedFeed = try! JSONDecoder().decode(Feed.self, from: data)
 
         let localFeedImages = archivedFeed.feed.map { LocalFeedImage(id: $0.id, description: $0.imageDescription, location: $0.location, url: $0.url) }
 
-        return (archivedFeed.timestamp, localFeedImages)
+        return LocalFeed(images: localFeedImages, timestamp: archivedFeed.timestamp)
     }
 }
