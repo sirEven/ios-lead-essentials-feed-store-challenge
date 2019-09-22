@@ -36,16 +36,13 @@ public final class UserDefaultsFeedStore: FeedStore {
         self.userDefaults = userDefaults
         self.key = key
         queue = DispatchQueue(label: "\(UserDefaultsFeedStore.self)Queue", qos: .userInitiated, attributes: .concurrent)
-
-
     }
 
     public func deleteCachedFeed(completion: @escaping UserDefaultsFeedStore.DeletionCompletion) {
 
         queue.async(flags: .barrier) {
-            let userDefaults = self.userDefaults
 
-            userDefaults.removeObject(forKey: self.key)
+            self.userDefaults.removeObject(forKey: self.key)
 
             completion(nil)
         }
@@ -55,9 +52,8 @@ public final class UserDefaultsFeedStore: FeedStore {
 
         queue.async(flags: .barrier) {
             let jsonFeed = self.localFeedToJson(images: feed, timestamp: timestamp)
-            let userDefaults = self.userDefaults
 
-            userDefaults.set(jsonFeed, forKey: self.key)
+            self.userDefaults.set(jsonFeed, forKey: self.key)
 
             completion(nil)
         }
@@ -66,8 +62,8 @@ public final class UserDefaultsFeedStore: FeedStore {
     public func retrieve(completion: @escaping UserDefaultsFeedStore.RetrievalCompletion) {
 
         queue.async {
-            let userDefaults = self.userDefaults
-            if let jsonData = userDefaults.data(forKey: self.key) {
+
+            if let jsonData = self.userDefaults.data(forKey: self.key) {
 
                 let localFeed = self.jsonToLocalFeed(jsonFeed: jsonData)
                 completion(.found(feed: localFeed.images, timestamp: localFeed.timestamp))
