@@ -16,11 +16,11 @@ public final class UserDefaultsFeedStore: FeedStore {
 
     private struct CodableFeed: Codable {
 
-        public var timestamp: Date
-        public var feed: [CodableFeedImage]
-        public var id: String
+       let timestamp: Date
+       let feed: [CodableFeedImage]
+       let id: String
 
-        public init(timestamp: Date, feed: [CodableFeedImage]) {
+        init(timestamp: Date, feed: [CodableFeedImage]) {
             self.timestamp = timestamp
             self.feed = feed
             self.id = UUID().uuidString
