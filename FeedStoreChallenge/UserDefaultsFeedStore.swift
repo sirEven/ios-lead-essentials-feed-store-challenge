@@ -6,7 +6,7 @@ import Foundation
 
 public final class UserDefaultsFeedStore: FeedStore {
 
-    private struct CodableFeedImage: Codable {
+    private struct FeedImage: Codable {
 
         let id: UUID
         let imageDescription: String?
@@ -17,10 +17,10 @@ public final class UserDefaultsFeedStore: FeedStore {
     private struct CodableFeed: Codable {
 
        let timestamp: Date
-       let feed: [CodableFeedImage]
+       let feed: [FeedImage]
        let id: String
 
-        init(timestamp: Date, feed: [CodableFeedImage]) {
+        init(timestamp: Date, feed: [FeedImage]) {
             self.timestamp = timestamp
             self.feed = feed
             id = UUID().uuidString
@@ -78,7 +78,7 @@ public final class UserDefaultsFeedStore: FeedStore {
 
     private func localFeedToJson(images: [LocalFeedImage], timestamp: Date) -> Data {
 
-        let archivedImages = images.map { CodableFeedImage(id: $0.id, imageDescription: $0.description, location: $0.location, url: $0.url) }
+        let archivedImages = images.map { FeedImage(id: $0.id, imageDescription: $0.description, location: $0.location, url: $0.url) }
 
         let archivableFeed = CodableFeed(timestamp: timestamp, feed: archivedImages)
 
