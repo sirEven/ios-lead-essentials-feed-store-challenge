@@ -35,8 +35,8 @@ Finally, add to this README file:
 
 ### Comments and remarks you think other developers will find useful.
 
-...
+1. My very costly beginner's error was to assume, that 'Date' needs to be converted (into a 'Double' for example) in order to write its value into a JSON. So whoever is strugling with that little detail, I hope you read this now ;)
 
 ### The Dependency Diagram demonstrating the architecture of your solution. 
 
-...
+
