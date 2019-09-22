@@ -18,6 +18,11 @@ public final class UserDefaultsFeedStore: FeedStore {
        let feed: [FeedImage]
     }
 
+    private struct LocalFeed {
+        let images: [LocalFeedImage]
+        let timestamp: Date
+    }
+
     private let queue: DispatchQueue
     private let userDefaults: UserDefaults
     private let key: String
@@ -42,9 +47,11 @@ public final class UserDefaultsFeedStore: FeedStore {
     public func insert(_ feed: [LocalFeedImage], timestamp: Date, completion: @escaping UserDefaultsFeedStore.InsertionCompletion) {
 
         queue.async(flags: .barrier) {
-            let jsonFeed = self.localFeedToJson(images: feed, timestamp: timestamp)
 
-            self.userDefaults.set(jsonFeed, forKey: self.key)
+            let feed = LocalFeed(images: feed, timestamp: timestamp)
+            let data = self.data(from: feed)
+
+            self.userDefaults.set(data, forKey: self.key)
 
             completion(nil)
         }
@@ -67,11 +74,11 @@ public final class UserDefaultsFeedStore: FeedStore {
         }
     }
 
-    private func localFeedToJson(images: [LocalFeedImage], timestamp: Date) -> Data {
+    private func data(from feed: LocalFeed) -> Data {
 
-        let archivedImages = images.map { FeedImage(id: $0.id, imageDescription: $0.description, location: $0.location, url: $0.url) }
+        let archivedImages = feed.images.map { FeedImage(id: $0.id, imageDescription: $0.description, location: $0.location, url: $0.url) }
 
-        let archivableFeed = Feed(timestamp: timestamp, feed: archivedImages)
+        let archivableFeed = Feed(timestamp: feed.timestamp, feed: archivedImages)
 
         let jsonFeed = try! JSONEncoder().encode(archivableFeed)
 
