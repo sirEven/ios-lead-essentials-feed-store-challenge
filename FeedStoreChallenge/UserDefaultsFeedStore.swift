@@ -6,7 +6,7 @@ import Foundation
 
 public final class UserDefaultsFeedStore: FeedStore {
 
-    private struct FeedImage: Codable {
+    fileprivate struct FeedImage: Codable {
         let id: UUID
         let imageDescription: String?
         let location: String?
@@ -76,7 +76,7 @@ public final class UserDefaultsFeedStore: FeedStore {
 
     private func data(from feed: LocalFeed) -> Data {
 
-        let images = feed.images.map { FeedImage(id: $0.id, imageDescription: $0.description, location: $0.location, url: $0.url) }
+        let images = feed.images.map { FeedImage(image: $0) }
 
         let feed = Feed(timestamp: feed.timestamp, feed: images)
 
@@ -87,8 +87,20 @@ public final class UserDefaultsFeedStore: FeedStore {
 
         let feed = try! JSONDecoder().decode(Feed.self, from: data)
 
-        let images = feed.feed.map { LocalFeedImage(id: $0.id, description: $0.imageDescription, location: $0.location, url: $0.url) }
+        let images = feed.feed.map { LocalFeedImage(image: $0) }
 
         return LocalFeed(images: images, timestamp: feed.timestamp)
+    }
+}
+
+private extension UserDefaultsFeedStore.FeedImage {
+    init(image: LocalFeedImage){
+        self.init(id: image.id, imageDescription: image.description, location: image.location, url: image.url)
+    }
+}
+
+private extension LocalFeedImage {
+    init(image: UserDefaultsFeedStore.FeedImage){
+        self.init(id: image.id, description: image.imageDescription, location: image.location, url: image.url)
     }
 }
