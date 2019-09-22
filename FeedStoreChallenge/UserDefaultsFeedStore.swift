@@ -4,7 +4,7 @@
 
 import Foundation
 
-public class UserDefaultsFeedStore: FeedStore {
+public final class UserDefaultsFeedStore: FeedStore {
 
     private struct CodableFeedImage: Codable {
 
