@@ -7,7 +7,6 @@ import Foundation
 public final class UserDefaultsFeedStore: FeedStore {
 
     private struct FeedImage: Codable {
-
         let id: UUID
         let imageDescription: String?
         let location: String?
@@ -15,16 +14,8 @@ public final class UserDefaultsFeedStore: FeedStore {
     }
 
     private struct Feed: Codable {
-
        let timestamp: Date
        let feed: [FeedImage]
-       let id: String
-
-        init(timestamp: Date, feed: [FeedImage]) {
-            self.timestamp = timestamp
-            self.feed = feed
-            id = UUID().uuidString
-        }
     }
 
     private let queue: DispatchQueue
