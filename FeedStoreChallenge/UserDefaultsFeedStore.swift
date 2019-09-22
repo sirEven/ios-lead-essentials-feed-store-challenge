@@ -80,9 +80,7 @@ public final class UserDefaultsFeedStore: FeedStore {
 
         let archivableFeed = Feed(timestamp: feed.timestamp, feed: archivedImages)
 
-        let jsonFeed = try! JSONEncoder().encode(archivableFeed)
-
-        return jsonFeed
+        return try! JSONEncoder().encode(archivableFeed)
     }
 
     private func feed(from data: Data) -> LocalFeed {
