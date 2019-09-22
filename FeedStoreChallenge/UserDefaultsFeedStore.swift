@@ -76,19 +76,19 @@ public final class UserDefaultsFeedStore: FeedStore {
 
     private func data(from feed: LocalFeed) -> Data {
 
-        let archivedImages = feed.images.map { FeedImage(id: $0.id, imageDescription: $0.description, location: $0.location, url: $0.url) }
+        let images = feed.images.map { FeedImage(id: $0.id, imageDescription: $0.description, location: $0.location, url: $0.url) }
 
-        let archivableFeed = Feed(timestamp: feed.timestamp, feed: archivedImages)
+        let feed = Feed(timestamp: feed.timestamp, feed: images)
 
-        return try! JSONEncoder().encode(archivableFeed)
+        return try! JSONEncoder().encode(feed)
     }
 
     private func feed(from data: Data) -> LocalFeed {
 
-        let archivedFeed = try! JSONDecoder().decode(Feed.self, from: data)
+        let feed = try! JSONDecoder().decode(Feed.self, from: data)
 
-        let localFeedImages = archivedFeed.feed.map { LocalFeedImage(id: $0.id, description: $0.imageDescription, location: $0.location, url: $0.url) }
+        let images = feed.feed.map { LocalFeedImage(id: $0.id, description: $0.imageDescription, location: $0.location, url: $0.url) }
 
-        return LocalFeed(images: localFeedImages, timestamp: archivedFeed.timestamp)
+        return LocalFeed(images: images, timestamp: feed.timestamp)
     }
 }
