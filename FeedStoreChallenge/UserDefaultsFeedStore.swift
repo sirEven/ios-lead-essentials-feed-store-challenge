@@ -78,22 +78,18 @@ public final class UserDefaultsFeedStore: FeedStore {
 
     private func localFeedToJson(images: [LocalFeedImage], timestamp: Date) -> Data {
 
-        let encoder = JSONEncoder()
-
         let archivedImages = images.map { CodableFeedImage(id: $0.id, imageDescription: $0.description, location: $0.location, url: $0.url) }
 
         let archivableFeed = CodableFeed(timestamp: timestamp, feed: archivedImages)
 
-        let jsonFeed = try! encoder.encode(archivableFeed)
+        let jsonFeed = try! JSONEncoder().encode(archivableFeed)
 
         return jsonFeed
     }
 
     private func jsonToLocalFeed(jsonFeed: Data) -> (timestamp: Date, images: [LocalFeedImage]) {
 
-        let decoder = JSONDecoder()
-
-        let archivedFeed = try! decoder.decode(CodableFeed.self, from: jsonFeed)
+        let archivedFeed = try! JSONDecoder().decode(CodableFeed.self, from: jsonFeed)
 
         let localFeedImages = archivedFeed.feed.map { LocalFeedImage(id: $0.id, description: $0.imageDescription, location: $0.location, url: $0.url) }
 
