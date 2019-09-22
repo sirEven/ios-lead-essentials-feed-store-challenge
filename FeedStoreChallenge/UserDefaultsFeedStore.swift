@@ -23,17 +23,21 @@ public final class UserDefaultsFeedStore: FeedStore {
         init(timestamp: Date, feed: [CodableFeedImage]) {
             self.timestamp = timestamp
             self.feed = feed
-            self.id = UUID().uuidString
+            id = UUID().uuidString
         }
     }
 
-    private let queue = DispatchQueue(label: "\(UserDefaultsFeedStore.self)Queue", qos: .userInitiated, attributes: .concurrent)
+    private let queue: DispatchQueue
     private let userDefaults: UserDefaults
     private let key: String
 
     public init(key: String, userDefaults: UserDefaults) {
+
         self.userDefaults = userDefaults
         self.key = key
+        queue = DispatchQueue(label: "\(UserDefaultsFeedStore.self)Queue", qos: .userInitiated, attributes: .concurrent)
+
+
     }
 
     public func deleteCachedFeed(completion: @escaping UserDefaultsFeedStore.DeletionCompletion) {
