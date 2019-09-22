@@ -61,9 +61,9 @@ public final class UserDefaultsFeedStore: FeedStore {
 
         queue.async {
 
-            if let jsonData = self.userDefaults.data(forKey: self.key) {
+            if let data = self.userDefaults.data(forKey: self.key) {
 
-                let localFeed = self.feed(from: jsonData)
+                let localFeed = self.feed(from: data)
                 completion(.found(feed: localFeed.images, timestamp: localFeed.timestamp))
 
             } else {
