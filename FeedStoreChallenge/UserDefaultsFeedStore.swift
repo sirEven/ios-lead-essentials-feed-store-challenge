@@ -28,8 +28,8 @@ public final class UserDefaultsFeedStore: FeedStore {
     }
 
     private let queue = DispatchQueue(label: "\(UserDefaultsFeedStore.self)Queue", qos: .userInitiated, attributes: .concurrent)
-    private var userDefaults: UserDefaults
-    private var key: String
+    private let userDefaults: UserDefaults
+    private let key: String
 
     public init(key: String, userDefaults: UserDefaults) {
         self.userDefaults = userDefaults
