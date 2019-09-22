@@ -8,17 +8,10 @@ public final class UserDefaultsFeedStore: FeedStore {
 
     private struct CodableFeedImage: Codable {
 
-        public var id: UUID
-        public var imageDescription: String?
-        public var location: String?
-        public var url: URL
-
-        public init(id: UUID, imageDescription: String?, location: String?, url: URL) {
-            self.id = id
-            self.imageDescription = imageDescription
-            self.location = location
-            self.url = url
-        }
+        let id: UUID
+        let imageDescription: String?
+        let location: String?
+        let url: URL
     }
 
     private struct CodableFeed: Codable {
