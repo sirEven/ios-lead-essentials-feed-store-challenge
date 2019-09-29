@@ -108,4 +108,59 @@ class FeedStoreChallengeTests: XCTestCase, FeedStoreSpecs {
     override func setUp() {
         cleanDefaults()
     }
+
+    //
+    // Uncomment the following tests if your implementation has failable operations.
+    // Otherwise, delete the commented out code!
+    //
+
+    //extension FeedStoreChallengeTests: FailableInsertFeedStoreSpecs {
+    //
+    //    func test_insert_deliversErrorOnInsertionError() {
+    ////        let sut = makeSUT()
+    ////
+    ////        assertThatInsertDeliversErrorOnInsertionError(on: sut)
+    //    }
+    //
+    //    func test_insert_hasNoSideEffectsOnInsertionError() {
+    ////        let sut = makeSUT()
+    ////
+    ////        assertThatInsertHasNoSideEffectsOnInsertionError(on: sut)
+    //    }
+    //
+    //}
+    //extension FeedStoreChallengeTests: FailableDeleteFeedStoreSpecs {
+    //
+    //    func test_delete_deliversErrorOnDeletionError() {
+    ////        let sut = makeSUT()
+    ////
+    ////        assertThatDeleteDeliversErrorOnDeletionError(on: sut)
+    //    }
+    //
+    //    func test_delete_hasNoSideEffectsOnDeletionError() {
+    ////        let sut = makeSUT()
+    ////
+    ////        assertThatDeleteHasNoSideEffectsOnDeletionError(on: sut)
+    //    }
+
+}
+
+extension FeedStoreChallengeTests: FailableRetrieveFeedStoreSpecs {
+
+    func test_retrieve_deliversFailureOnRetrievalError() {
+        let sut = makeSUT(with: testSpecificUserDefaultsKey())
+
+        UserDefaults.standard.set("invalid data".data(using: .utf8), forKey: testSpecificUserDefaultsKey())
+
+        assertThatRetrieveDeliversFailureOnRetrievalError(on: sut)
+    }
+
+    func test_retrieve_hasNoSideEffectsOnFailure() {
+        let sut = makeSUT(with: testSpecificUserDefaultsKey())
+
+        UserDefaults.standard.set("invalid data".data(using: .utf8), forKey: "feed")
+
+        assertThatRetrieveHasNoSideEffectsOnFailure(on: sut)
+    }
+
 }

@@ -49,7 +49,7 @@ public final class UserDefaultsFeedStore: FeedStore {
         queue.async(flags: .barrier) {
 
             let feed = LocalFeed(images: feed, timestamp: timestamp)
-            let data = self.data(from: feed)
+            let data = try! self.data(from: feed)
 
             self.userDefaults.set(data, forKey: self.key)
 
@@ -60,32 +60,31 @@ public final class UserDefaultsFeedStore: FeedStore {
     public func retrieve(completion: @escaping UserDefaultsFeedStore.RetrievalCompletion) {
 
         queue.async {
+            guard let jsonData = self.userDefaults.data(forKey: self.key) else {
+                return completion(.empty)
+            }
 
-            if let data = self.userDefaults.data(forKey: self.key) {
-
-                let localFeed = self.feed(from: data)
+            do {
+                let localFeed = try self.feed(from: jsonData)
                 completion(.found(feed: localFeed.images, timestamp: localFeed.timestamp))
-
-            } else {
-
-                completion(.empty)
-
+            } catch {
+                completion(.failure(error))
             }
         }
     }
 
-    private func data(from feed: LocalFeed) -> Data {
+    private func data(from feed: LocalFeed) throws -> Data {
 
         let images = feed.images.map { FeedImage(image: $0) }
 
         let feed = Feed(timestamp: feed.timestamp, feed: images)
 
-        return try! JSONEncoder().encode(feed)
+        return try JSONEncoder().encode(feed)
     }
 
-    private func feed(from data: Data) -> LocalFeed {
+    private func feed(from data: Data) throws -> LocalFeed {
 
-        let feed = try! JSONDecoder().decode(Feed.self, from: data)
+        let feed = try JSONDecoder().decode(Feed.self, from: data)
 
         let images = feed.feed.map { LocalFeedImage(image: $0) }
 
