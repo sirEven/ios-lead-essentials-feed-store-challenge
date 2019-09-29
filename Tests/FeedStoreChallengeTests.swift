@@ -150,7 +150,7 @@ extension FeedStoreChallengeTests: FailableRetrieveFeedStoreSpecs {
     func test_retrieve_deliversFailureOnRetrievalError() {
         let sut = makeSUT(with: testSpecificUserDefaultsKey())
 
-        UserDefaults.standard.set("invalid data".data(using: .utf8), forKey: testSpecificUserDefaultsKey())
+        writeInvalidData()
 
         assertThatRetrieveDeliversFailureOnRetrievalError(on: sut)
     }
@@ -158,9 +158,13 @@ extension FeedStoreChallengeTests: FailableRetrieveFeedStoreSpecs {
     func test_retrieve_hasNoSideEffectsOnFailure() {
         let sut = makeSUT(with: testSpecificUserDefaultsKey())
 
-        UserDefaults.standard.set("invalid data".data(using: .utf8), forKey: "feed")
+        writeInvalidData()
 
         assertThatRetrieveHasNoSideEffectsOnFailure(on: sut)
+    }
+
+    private func writeInvalidData() {
+        UserDefaults.standard.set("invalid data".data(using: .utf8), forKey: "feed")
     }
 
 }
