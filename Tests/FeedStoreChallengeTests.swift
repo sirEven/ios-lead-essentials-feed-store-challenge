@@ -108,12 +108,6 @@ class FeedStoreChallengeTests: XCTestCase, FeedStoreSpecs {
     override func setUp() {
         cleanDefaults()
     }
-
-    //
-    // Uncomment the following tests if your implementation has failable operations.
-    // Otherwise, delete the commented out code!
-    //
-
 }
 
 extension FeedStoreChallengeTests: FailableRetrieveFeedStoreSpecs {
@@ -137,5 +131,4 @@ extension FeedStoreChallengeTests: FailableRetrieveFeedStoreSpecs {
     private func writeInvalidData() {
         UserDefaults.standard.set("invalid data".data(using: .utf8), forKey: "feed")
     }
-
 }
